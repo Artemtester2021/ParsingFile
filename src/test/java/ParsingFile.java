@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 public class ParsingFile {
 
     private ClassLoader cl = ParsingFile.class.getClassLoader();
@@ -32,28 +35,32 @@ public class ParsingFile {
     @Test
     @DisplayName("Чтение pdf файла из архива")
     void pdfFileParsingTest() throws Exception {
+        boolean pdfFile = false;
         try (InputStream inputStream = cl.getResourceAsStream("archive.zip");
              ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 if (zipEntry.getName().endsWith(".pdf")) {
+                    pdfFile = true;
                     PDF pdf = new PDF(zipInputStream);
                     Assertions.assertEquals("PDF Form Example", pdf.title);
                     Assertions.assertTrue(pdf.text.contains("This is an example of a user fillable PDF form"));
                 }
             }
-
         }
+        Assertions.assertTrue(pdfFile, "PDF файл не найден в архиве");
     }
 
 
     @Test
-    @DisplayName("Чтение xlsx файла из архива")
+    @DisplayName("Чтение xls файла из архива")
     void xlsFileParsingTest() throws Exception {
+        boolean xlsFile = false;
         try (InputStream inputStream = cl.getResourceAsStream("archive.zip"); ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 if (zipEntry.getName().endsWith(".xls")) {
+                    xlsFile = true;
                     XLS xls = new XLS(zipInputStream);
                     String titleName = xls.excel.getSheetAt(0).getRow(0).getCell(0).getStringCellValue();
                     String titleNameOne = xls.excel.getSheetAt(0).getRow(1).getCell(0).getStringCellValue();
@@ -82,16 +89,19 @@ public class ParsingFile {
                 }
             }
         }
+        Assertions.assertTrue(xlsFile, "xls файл не найден в архиве");
     }
 
 
     @Test
     @DisplayName("Чтение csv файла из архива")
     void csvFileParsingTest() throws Exception {
+        boolean csvFile = false;
         try (InputStream inputStream = cl.getResourceAsStream("archive.zip"); ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                 if (zipEntry.getName().endsWith(".csv")) {
+                    csvFile = true;
                     CSVReader csvReader = new CSVReader(new InputStreamReader(zipInputStream));
                     List<String[]> content = csvReader.readAll();
                     org.assertj.core.api.Assertions.assertThat(content).contains(
@@ -104,5 +114,6 @@ public class ParsingFile {
                 }
             }
         }
+        Assertions.assertTrue(csvFile, "csv файл не найден в архиве");
     }
 }
